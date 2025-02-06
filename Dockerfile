@@ -4,6 +4,9 @@ FROM python:3.9-slim
 # Set the working directory inside the container
 WORKDIR /app
 
+# Create a logs directory
+RUN mkdir -p /app/logs
+
 # Copy the requirements file into the container
 COPY requirements.txt .
 
