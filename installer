@@ -1,3 +1,4 @@
 python3 -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 pip install requests beautifulsoup4 selenium python-telegram-bot
+pip install selenium
