@@ -1,5 +1,5 @@
-# Use an official Python runtime as the base image
-FROM python:3.9-slim
+# Use a more robust Python base image
+FROM python:3.9
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -10,16 +10,14 @@ RUN mkdir -p /app/logs
 # Copy the requirements file into the container
 COPY requirements.txt .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Install Chrome and ChromeDriver
+# Install system dependencies and Chrome
 RUN apt-get update && apt-get install -y \
     wget \
     unzip \
     gnupg2 \
-    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
+    curl \
+    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/googlechrome-linux-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/googlechrome-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
     && CHROME_VERSION=$(google-chrome --version | awk '{print $3}') \
@@ -28,16 +26,19 @@ RUN apt-get update && apt-get install -y \
     && unzip /tmp/chromedriver.zip -d /usr/bin/ \
     && chmod +x /usr/bin/chromedriver \
     && rm /tmp/chromedriver.zip \
-    && apt-get remove -y wget unzip gnupg2 \
+    && apt-get remove -y wget unzip gnupg2 curl \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
 COPY . .
 
 # Set environment variables (if needed)
-ENV TELEGRAM_BOT_TOKEN=7407487191:AAHE2jOqIQx3X9sU6jp6_PGV_BihtHke_ds
-ENV WEBSITE_LOGIN_URL=https://web.classplusapp.com/login
+ENV TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+ENV WEBSITE_LOGIN_URL=https://example.com/login
 
 # Run the Telegram bot
 CMD ["python", "telegram_bot.py"]
